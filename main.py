@@ -1,10 +1,13 @@
 import logging
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, CallbackQueryHandler, MessageHandler, filters
 import sqlite3
 import os
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, CallbackQueryHandler, filters
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
 logger = logging.getLogger(__name__)
 
 ADMIN_ID = 6779224630
@@ -15,7 +18,7 @@ def init_db():
     cursor = conn.cursor()
     cursor.execute('''CREATE TABLE IF NOT EXISTS users (user_id INTEGER PRIMARY KEY, username TEXT)''')
     cursor.execute('''CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT)''')
-    cursor.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('bot_status', 'ON')")
+    cursor.execute('''INSERT OR IGNORE INTO settings (key, value) VALUES ('bot_status', 'ON')''')
     conn.commit()
     conn.close()
 
@@ -54,9 +57,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         status = get_bot_status()
         if status == 'OFF':
-            await update.message.reply_text("দুঃখিত, বর্তমানে বটটি বন্ধ রয়েছে। একটু পর আবার চেষ্টা করুন।")
+            await update.message.reply_text("দুঃখিত, বর্তমানে বটটি বন্ধ রয়েছে। একটু পরে আবার চেষ্টা করুন।")
         else:
-            await update.message.reply_text("আসসালামু আলাইকুম! আপনার বার্তাটি সফলভাবে গ্রহণ করা হয়েছে। এডমিন খুব শীঘ্রই আপনার সাথে যোগাযোগ করবেন।")
+            await update.message.reply_text("আসসালামু আলাইকুম! আপনার বার্তাটি সফলভাবে প্রেরণ করা হয়েছে। এডমিন খুব শীঘ্রই আপনার সাথে যোগাযোগ করবেন।")
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -85,7 +88,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     if user.id == ADMIN_ID:
         return
-    
+
     status = get_bot_status()
     if status == 'OFF':
         await update.message.reply_text("দুঃখিত, বটটি বর্তমানে অফলাইন আছে।")
@@ -99,7 +102,7 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
     app.add_handler(CallbackQueryHandler(button_handler))
-    
+
     print("Bot is running...")
     app.run_polling()
 
